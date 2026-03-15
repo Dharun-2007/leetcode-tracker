@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
 import fs from "fs/promises";
 import path from "path";
 
-const dataFilePath = path.join(process.cwd(), "data", "users.json");
 const blind75FilePath = path.join(process.cwd(), "data", "blind75.json");
 const LEETCODE_ENDPOINT = "https://leetcode.com/graphql";
 
@@ -13,15 +13,6 @@ const QUERY = `
     }
   }
 `;
-
-async function readUsers() {
-  const json = await fs.readFile(dataFilePath, "utf8");
-  return JSON.parse(json);
-}
-
-async function writeUsers(users) {
-  await fs.writeFile(dataFilePath, JSON.stringify(users, null, 2), "utf8");
-}
 
 async function readBlind75() {
   const json = await fs.readFile(blind75FilePath, "utf8");
@@ -37,15 +28,20 @@ export async function POST(request) {
       return NextResponse.json({ error: "Missing userId parameter" }, { status: 400 });
     }
 
-    const users = await readUsers();
-    const userIndex = users.findIndex((u) => u.id === userId);
+    const supabase = getSupabaseAdmin();
 
-    if (userIndex === -1) {
+    // Fetch user from Supabase
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (userError || !user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const user = users[userIndex];
-    if (!user.leetcodeUsername) {
+    if (!user.leetcode_username) {
       return NextResponse.json({ message: "No LeetCode username configured" }, { status: 200 });
     }
 
@@ -58,7 +54,7 @@ export async function POST(request) {
       },
       body: JSON.stringify({
         query: QUERY,
-        variables: { username: user.leetcodeUsername, limit: 20 },
+        variables: { username: user.leetcode_username, limit: 20 },
       }),
       cache: "no-store",
     });
@@ -69,7 +65,7 @@ export async function POST(request) {
 
     const leetcodeData = await leetcodeRes.json();
     const recentSubmissions = leetcodeData?.data?.recentAcSubmissionList || [];
-    
+
     // Extract slugs from submissions
     const recentSlugs = recentSubmissions.map((sub) => sub.titleSlug);
 
@@ -82,21 +78,29 @@ export async function POST(request) {
       }
     }
 
-    // Identify which recent slugs are in Blind 75 and not yet solved by user
-    const userSolvedSlugs = new Set(user.blind75SolvedSlugs || []);
+    // Identify which recent slugs are in Blind 75 and not yet solved by user in cache
+    const { data: progressData } = await supabase
+      .from("blind75_progress")
+      .select("question_slug")
+      .eq("user_id", userId);
+
+    const userSolvedSlugs = new Set((progressData || []).map(p => p.question_slug));
+
     let newSolvesFound = false;
+    const newInserts = [];
 
     for (const slug of recentSlugs) {
       if (blind75Slugs.has(slug) && !userSolvedSlugs.has(slug)) {
         userSolvedSlugs.add(slug);
+        newInserts.push({ user_id: userId, question_slug: slug });
         newSolvesFound = true;
       }
     }
 
-    if (newSolvesFound) {
-      user.blind75SolvedSlugs = Array.from(userSolvedSlugs);
-      users[userIndex] = user;
-      await writeUsers(users);
+    if (newSolvesFound && newInserts.length > 0) {
+      // Upsert into Supabase blind75_progress
+      await supabase.from("blind75_progress").upsert(newInserts, { onConflict: 'user_id, question_slug' });
+
       return NextResponse.json({ updated: true, user });
     }
 
