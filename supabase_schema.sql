@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     name TEXT NOT NULL,
     roll_number TEXT,
     email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('student', 'teacher', 'admin')),
     leetcode_username TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.account_requests (
     name TEXT NOT NULL,
     roll_number TEXT,
     email TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
+    email TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student')),
     leetcode_username TEXT,
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
@@ -66,8 +66,8 @@ CREATE OR REPLACE FUNCTION handle_account_approval()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.status = 'approved' AND OLD.status = 'pending' THEN
-        INSERT INTO public.users (name, roll_number, email, password_hash, role, leetcode_username)
-        VALUES (NEW.name, NEW.roll_number, NEW.email, NEW.password_hash, NEW.role, NEW.leetcode_username)
+        INSERT INTO public.users (name, roll_number, email, role, leetcode_username)
+        VALUES (NEW.name, NEW.roll_number, NEW.email, NEW.role, NEW.leetcode_username)
         ON CONFLICT (email) DO NOTHING;
     END IF;
     RETURN NEW;
