@@ -27,10 +27,13 @@ export async function POST(request) {
             leetcode_username: req.leetcode_username,
         }]);
 
-        if (insertErr) return NextResponse.json({ error: insertErr.message }, { status: 500 });
+        if (insertErr) {
+            console.error("Manual user insert failed (trigger might have handled it):", insertErr.message);
+        }
 
         // Mark as approved
-        await supabase.from("account_requests").update({ status: "approved" }).eq("id", requestId);
+        const { error: updateErr } = await supabase.from("account_requests").update({ status: "approved" }).eq("id", requestId);
+        if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
 
         return NextResponse.json({ success: true });
     } catch (err) {

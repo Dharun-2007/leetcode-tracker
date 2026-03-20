@@ -47,7 +47,12 @@ export default function AdminRequestsPage() {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ requestId: id }),
         });
-        if (res.ok) setRequests((prev) => prev.map((r) => r.id === id ? { ...r, status: "approved" } : r));
+        if (res.ok) {
+            setRequests((prev) => prev.map((r) => r.id === id ? { ...r, status: "approved" } : r));
+        } else {
+            const errData = await res.json().catch(() => ({}));
+            alert("Approval failed: " + (errData.error || "Server error"));
+        }
         setActionLoading(null);
     }
 
@@ -57,11 +62,18 @@ export default function AdminRequestsPage() {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ requestId: id }),
         });
-        if (res.ok) setRequests((prev) => prev.map((r) => r.id === id ? { ...r, status: "rejected" } : r));
+        if (res.ok) {
+            setRequests((prev) => prev.map((r) => r.id === id ? { ...r, status: "rejected" } : r));
+        } else {
+            const errData = await res.json().catch(() => ({}));
+            alert("Rejection failed: " + (errData.error || "Server error"));
+        }
         setActionLoading(null);
     }
 
     if (!currentUser) return null;
+
+    const visibleRequests = filter === "all" ? requests : requests.filter((r) => r.status === filter);
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -92,7 +104,7 @@ export default function AdminRequestsPage() {
                     <div className="flex justify-center py-16">
                         <Loader2 className="h-7 w-7 animate-spin text-blue-500" />
                     </div>
-                ) : requests.length === 0 ? (
+                ) : visibleRequests.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-400">
                         <Clock className="h-12 w-12 opacity-30" />
                         <p className="font-medium">No {filter} requests found</p>
@@ -106,7 +118,7 @@ export default function AdminRequestsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {requests.map((req) => (
+                                {visibleRequests.map((req) => (
                                     <tr key={req.id}>
                                         <td>
                                             <div className="flex items-center gap-2">
