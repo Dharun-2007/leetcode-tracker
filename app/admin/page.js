@@ -41,7 +41,8 @@ export default function AdminDashboard() {
             return;
         }
         loadStats();
-    }, [currentUser]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentUser, router]);
 
     async function loadStats() {
         try {

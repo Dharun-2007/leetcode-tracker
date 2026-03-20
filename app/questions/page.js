@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../../components/AuthContext";
 import { computeBlind75Stats } from "../../lib/blind75";
 import {
@@ -82,11 +82,7 @@ export default function QuestionsPage() {
   const [loading, setLoading] = useState(true);
   const [cacheInfo, setCacheInfo] = useState(null);
 
-  useEffect(() => {
-    if (currentUser) loadData();
-  }, [currentUser]);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     if (!currentUser?.leetcode_username) {
       // No LeetCode username — leave stats as null, show warning in UI
       setLoading(false);
@@ -107,7 +103,11 @@ export default function QuestionsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser) loadData();
+  }, [currentUser, loadData]);
 
   if (!currentUser) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-blue-500" /></div>;
 

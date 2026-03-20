@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../../../components/AuthContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
@@ -22,17 +22,18 @@ export default function AdminUsersPage() {
   const [editData, setEditData] = useState({});
   const [actionLoading, setActionLoading] = useState(null);
 
-  useEffect(() => {
-    if (!currentUser) return;
-    if (currentUser.role !== "admin") { router.push("/"); return; }
-    loadUsers();
-  }, [currentUser]);
-
-  async function loadUsers() {
+  const loadUsers = useCallback(async () => {
     const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
     setUsers(data || []);
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    if (currentUser.role !== "admin") { router.push("/"); return; }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadUsers();
+  }, [currentUser, router, loadUsers]);
 
   async function handleDelete(id) {
     if (!confirm("Delete this user? This cannot be undone.")) return;

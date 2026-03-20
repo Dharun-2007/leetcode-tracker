@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../../../components/AuthContext";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
@@ -25,20 +25,21 @@ export default function AdminRequestsPage() {
     const [actionLoading, setActionLoading] = useState(null);
     const [filter, setFilter] = useState("pending");
 
-    useEffect(() => {
-        if (!currentUser) return;
-        if (currentUser.role !== "admin") { router.push("/"); return; }
-        loadRequests();
-    }, [currentUser, filter]);
-
-    async function loadRequests() {
+    const loadRequests = useCallback(async () => {
         setLoading(true);
         const query = supabase.from("account_requests").select("*").order("created_at", { ascending: false });
         if (filter !== "all") query.eq("status", filter);
         const { data } = await query;
         setRequests(data || []);
         setLoading(false);
-    }
+    }, [filter]);
+
+    useEffect(() => {
+        if (!currentUser) return;
+        if (currentUser.role !== "admin") { router.push("/"); return; }
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        loadRequests();
+    }, [currentUser, filter, router, loadRequests]);
 
     async function handleApprove(id) {
         setActionLoading(id + "_approve");

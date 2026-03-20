@@ -63,11 +63,10 @@ function CategoryCard({ category, data, onClickSolved }) {
         <span className="font-bold text-sm text-gray-200 truncate pr-2">{category}</span>
         <button
           onClick={() => data.solved > 0 && onClickSolved()}
-          className={`text-xs font-black px-3 py-1 rounded-full transition-all ${
-            data.solved > 0
+          className={`text-xs font-black px-3 py-1 rounded-full transition-all ${data.solved > 0
               ? "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40 border border-blue-500/30 cursor-pointer"
               : "bg-gray-800 text-gray-600 cursor-default"
-          }`}
+            }`}
         >
           {data.solved}/{data.total}
         </button>
@@ -105,7 +104,7 @@ export default function StudentProfile() {
       setStudent(user);
 
       const { data: cache } = await supabase.from("leetcode_stats_cache").select("*").eq("user_id", id).single();
-      
+
       if (cache) {
         const slugs = cache.solved_slugs || [];
         setStats({
@@ -141,7 +140,7 @@ export default function StudentProfile() {
       if (res.ok) {
         const lcData = await res.json();
         const slugs = lcData.solved_slugs || lcData.solvedSlugs || [];
-        
+
         const mappedData = {
           totalSolved: lcData.total_solved || lcData.totalSolved || 0,
           easySolved: lcData.easy_solved || lcData.easySolved || 0,
@@ -183,12 +182,12 @@ export default function StudentProfile() {
             <ArrowLeft className="mr-2 h-4 w-4" /> BACK TO DASHBOARD
           </Link>
         ) : <div />}
-        <button 
-          onClick={handleRefresh} 
-          disabled={refreshing} 
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
           className="flex items-center gap-2 text-xs font-black tracking-widest text-gray-500 hover:text-blue-400 uppercase transition-all"
         >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} /> 
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
           {refreshing ? "Updating..." : "Refresh Stats"}
         </button>
       </div>
@@ -231,10 +230,16 @@ export default function StudentProfile() {
 
       {/* Categories Grid */}
       {b75 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {Object.entries(b75.categories).map(([category, data]) => (
-            <CategoryCard key={category} category={category} data={data} onClickSolved={() => setModalCategory(category)} />
-          ))}
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Blind 75 Progress</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Track how many Blind 75 problems you have completed.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {Object.entries(b75.categories).map(([category, data]) => (
+              <CategoryCard key={category} category={category} data={data} onClickSolved={() => setModalCategory(category)} />
+            ))}
+          </div>
         </div>
       )}
     </div>

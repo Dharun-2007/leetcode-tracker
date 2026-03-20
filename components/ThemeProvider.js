@@ -15,6 +15,7 @@ export function ThemeProvider({ children }) {
         ? window.localStorage.getItem(STORAGE_KEY)
         : null;
     if (stored === "light" || stored === "dark") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTheme(stored);
       document.documentElement.classList.toggle("dark", stored === "dark");
       return;

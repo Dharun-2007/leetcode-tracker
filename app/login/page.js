@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../components/AuthContext";
 import Link from "next/link";
@@ -13,9 +13,17 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   const router = useRouter();
-  const { login } = useAuth(); // Safely calls Supabase Auth internally
+  const { login, currentUser } = useAuth(); // Safely calls Supabase Auth internally
+
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.role === "admin") router.replace("/admin");
+      else if (currentUser.role === "teacher") router.replace("/dashboard");
+      else router.replace("/questions");
+    }
+  }, [currentUser, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,7 +47,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen w-full flex flex-col overflow-hidden">
-      
+
       {/* Background Animations */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-48 -left-48 w-96 h-96 rounded-full bg-blue-500/25 blur-[100px] animate-pulse" />
@@ -53,7 +61,7 @@ export default function LoginPage() {
 
       <div className="flex-1 flex items-center justify-center px-4 py-12 sm:py-16">
         <div className="w-full max-w-md animate-fade-in">
-          
+
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl shadow-blue-500/40 mb-4">
               <Zap className="h-8 w-8 text-white" />

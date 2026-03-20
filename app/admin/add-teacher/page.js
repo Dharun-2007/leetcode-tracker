@@ -14,7 +14,7 @@ export default function AddTeacherPage() {
 
     useEffect(() => {
         if (currentUser && currentUser.role !== "admin") router.push("/");
-    }, [currentUser]);
+    }, [currentUser, router]);
 
     const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
