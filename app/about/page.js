@@ -19,7 +19,7 @@ export default function AboutPage() {
             Author
           </h2>
           <p className="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">
-            Dharun
+            Dharun K C
           </p>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
             Built with Next.js App Router, TailwindCSS, and a clean
@@ -35,7 +35,7 @@ export default function AboutPage() {
             <li>
               <span className="font-medium">GitHub: </span>
               <a
-                href="https://github.com/"
+                href="https://github.com/Dharun-2007"
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-600 hover:underline dark:text-blue-400"
@@ -46,7 +46,7 @@ export default function AboutPage() {
             <li>
               <span className="font-medium">LinkedIn: </span>
               <a
-                href="https://www.linkedin.com/"
+                href="https://www.linkedin.com/in/dharun-k-c"
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-600 hover:underline dark:text-blue-400"
@@ -57,10 +57,10 @@ export default function AboutPage() {
             <li>
               <span className="font-medium">Email: </span>
               <a
-                href="mailto:dharun@example.com"
+                href="mailto:dharunkc180@gmail.com"
                 className="text-blue-600 hover:underline dark:text-blue-400"
               >
-                dharun@example.com
+                dharunkc180@gmail.com
               </a>
             </li>
           </ul>
